@@ -159,36 +159,82 @@ import ReactDOM from 'react-dom';
 //                     date = {comment.date}
 //                 />, document.getElementById("root"));
 
-class Clock extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {date: new Date()};
-    }
+// class Clock extends React.Component {
+//     constructor(props) {
+//         super(props);
+//         this.state = {date: new Date()};
+//     }
 
-    componentDidMount() {
-        this.timerID = setInterval(
-            () => this.tick(),
-            1000);
-    }
+//     componentDidMount() {
+//         this.timerID = setInterval(
+//             () => this.tick(),
+//             1000);
+//     }
 
-    componentWillUnmount(){
-        clearInterval(this.timerID);
-    }
+//     componentWillUnmount(){
+//         clearInterval(this.timerID);
+//     }
 
-    tick() {
-        this.setState({
-            date: new Date()
-        });
-    }
+//     tick() {
+//         this.setState({
+//             date: new Date()
+//         });
+//     }
 
-    render() {
-        return (
-            <div>
-                <h1>Hello</h1>
-                <h2>Now is: {this.state.date.toLocaleTimeString()}</h2>
-            </div>
-        );
-    }
+//     render() {
+//         return (
+//             <div>
+//                 <h1>Hello</h1>
+//                 <h2>Now is: {this.state.date.toLocaleTimeString()}</h2>
+//             </div>
+//         );
+//     }
+// }
+
+// ReactDOM.render(<Clock />, document.getElementById("root"));
+
+
+// function NumberList(props) {
+//     const numbers = props.numbers;
+//     const listItems = numbers.map((number)=>
+//         <li key={number.toString()}>{number}</li>
+//     );
+//     return (
+//         <ul>{listItems}</ul>
+//     );
+// }
+
+// const numbers = [1,2,3];
+// ReactDOM.render(
+//     <NumberList numbers={numbers} />,
+//     document.getElementById('root')
+// );
+
+//Render number
+function ListItem(props) {
+    const value = props.value;
+    return (
+        <li>
+            {value}
+        </li>
+    );
 }
 
-ReactDOM.render(<Clock />, document.getElementById("root"));
+function NumberList(props) {
+    const numbers = props.numbers;
+    const listItems = numbers.map((number)=>
+        <ListItem value={number} key={number.toString()} />
+    );
+    
+    return (
+        <ul>
+            {listItems}
+        </ul>
+    );
+}
+
+const numbers = [1, 2, 3, 4, 5];
+ReactDOM.render(
+  <NumberList numbers={numbers} />,
+  document.getElementById('root')
+);
