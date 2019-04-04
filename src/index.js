@@ -240,62 +240,141 @@ import ReactDOM from 'react-dom';
 // );
 
 
-class NameForm extends React.Component {
-    constructor (props) {
+// class NameForm extends React.Component {
+//     constructor (props) {
+//         super(props);
+//         this.state = {value: '', name: '',fruit: "",fruitSelectd: 'lime'};
+//         this.handleChange = this.handleChange.bind(this);
+//         this.handleSubmit = this.handleSubmit.bind(this);
+//     }
+
+//     handleChange(e) {        
+//         const target = e.target;
+//         const value = e.target.value;
+//         var type = e.target.name === "yourname" ? "text" : e.target.name === "yourfruit" ? "select" : "";
+//         if (type === "text") {
+//             this.setState({
+//                 value: value,
+//                 name: ''
+//             });
+//         }
+//         else if (type=== "select") {
+//             this.setState({ 
+//                 fruitSelectd: e.target.value
+//             });
+//         }
+//     }
+
+//     handleSubmit(e) {
+//         this.setState({
+//             name: this.state.value,
+//             fruit: this.state.fruitSelectd
+//         });
+//         e.preventDefault();
+//     }
+
+//     render() {
+//         const listFruit = <select name="yourfruit" value={this.state.fruitSelectd} onChange={this.handleChange}>
+//             <option value="grapefruit">Grapefruit</option>
+//             <option value="lime">Lime</option>
+//             <option value="coconut">Coconut</option>
+//             <option value="mango">Mango</option>
+//         </select>
+//         return (
+//             <form onSubmit={this.handleSubmit}>
+//                 <label>
+//                     Name: <input type='text' name="yourname" value={this.state.value} onChange={this.handleChange} />
+//                 </label>
+//                 {listFruit}
+//                 <input type="submit" value="Alert Name" />                                
+                
+//                 <p>Welcome: {this.state.name}</p>
+//                 <p>Your drink is: {this.state.fruit}</p>
+//             </form>
+//         );
+//     }
+// }
+
+// ReactDOM.render(
+//   <NameForm />,
+//   document.getElementById('root')
+// );
+
+function toCelsius(fahrenheit) {
+    return (fahrenheit - 32) * 5 / 9;
+}
+  
+function toFahrenheit(celsius) {
+    return (celsius * 9 / 5) + 32;
+}
+
+function tryConvert(temperature, convert) {
+    const input = parseFloat(temperature);
+    if (Number.isNaN(input)) {
+      return '';
+    }
+    const output = convert(input);
+    const rounded = Math.round(output * 1000) / 1000;
+    return rounded.toString();
+}
+
+const scaleNames = {
+    c: 'Celsius',
+    f: 'Fahrenheit'
+  };
+
+class TemperatureInput extends React.Component {
+    constructor(props) {
         super(props);
-        this.state = {value: '', name: '',fruit: "",fruitSelectd: 'lime'};
         this.handleChange = this.handleChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
     }
 
-    handleChange(e) {        
-        const target = e.target;
-        const value = e.target.value;
-        var type = e.target.name === "yourname" ? "text" : e.target.name === "yourfruit" ? "select" : "";
-        if (type === "text") {
-            this.setState({
-                value: value,
-                name: ''
-            });
-        }
-        else if (type=== "select") {
-            this.setState({ 
-                fruitSelectd: e.target.value
-            });
-        }
-    }
-
-    handleSubmit(e) {
-        this.setState({
-            name: this.state.value,
-            fruit: this.state.fruitSelectd
-        });
-        e.preventDefault();
+    handleChange(e) {
+        this.props.onTemperatureChange(e.target.value);
     }
 
     render() {
-        const listFruit = <select name="yourfruit" value={this.state.fruitSelectd} onChange={this.handleChange}>
-            <option value="grapefruit">Grapefruit</option>
-            <option value="lime">Lime</option>
-            <option value="coconut">Coconut</option>
-            <option value="mango">Mango</option>
-        </select>
+        const temperature = this.props.temperature;
+        const scale = this.props.scale;
         return (
-            <form onSubmit={this.handleSubmit}>
-                <label>
-                    Name: <input type='text' name="yourname" value={this.state.value} onChange={this.handleChange} />
-                </label>
-                {listFruit}
-                <input type="submit" value="Alert Name" />                                
-                
-                <p>Welcome: {this.state.name}</p>
-                <p>Your drink is: {this.state.fruit}</p>
-            </form>
+            <fieldset>
+                <legend>Enter temperature in {scaleNames[scale]}:</legend>
+                <input value={temperature}
+                        onChange={this.handleChange} />
+            </fieldset>
         );
     }
 }
 
-ReactDOM.render(
-  <NameForm />,
-  document.getElementById('root')
-);
+class Calculator extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {temperature: '', scale: 'c'};
+        this.handleCelsiusChange = this.handleCelsiusChange.bind(this);
+        this.handleFahrenheitChange = this.handleFahrenheitChange.bind(this);
+    }
+
+    handleCelsiusChange(temperature) {
+        this.setState({scale:'c', temperature});
+    }
+
+    handleFahrenheitChange(temperature) {
+        this.setState({scale: 'f', temperature});
+    }  
+
+    render() {
+        const scale = this.state.scale;
+        const temperature = this.state.temperature;
+        const celsius = scale === 'f' ? tryConvert(temperature, toCelsius) : temperature;
+        const fahrenheit = scale === 'c' ? tryConvert(temperature, toFahrenheit) : temperature;
+        
+        return (
+            <div>
+                <TemperatureInput scale='c' temperature={celsius} onTemperatureChange={this.handleCelsiusChange} />
+                <TemperatureInput sacle='f'temperature={fahrenheit} onTemperatureChange={this.handleFahrenheitChange} />
+            </div>
+        );
+    }
+}
+
+ReactDOM.render(<Calculator />, document.getElementById("root"));
