@@ -50,13 +50,8 @@ import ReactDOM from 'react-dom';
 // setInterval(tick,1000);
 
 
-//define react component as class ES6 syntax
-var user = {
-    name: "Linh",
-    avatar: "https://via.placeholder.com/50x50.png?text=Test",
-};
 
-class Welcome extends React.Component {
+// class Welcome extends React.Component {
     //use in normal case
     // //define constructor to get props that passed from ReactDOM.render method
     // constructor(props) {
@@ -67,32 +62,100 @@ class Welcome extends React.Component {
     //     //why need to use this to use "props" => can't use props without "this"
     //     return <h1>Hello, {this.props.user.name} again!</h1>
     // }
-
-    //define constructor to get props that passed from ReactDOM.render method
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        return (
-            <div>
-                <User username={this.props.user.name}/>
-            </div>        
-        )
-    }
-}
-
-class User extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        //why need to use this to use "props" => can't use props without "this"
-        return <h1>Hello, {this.props.username} again!</h1>
-    }
-}
+// }
 
 
-//use "user" as DOM attribute but it's treated props in component
-ReactDOM.render(<Welcome user={user} />, document.getElementById("root"));
+
+//define react component as class ES6 syntax
+// var user = {
+//     name: "Linh",
+//     avatar: "https://via.placeholder.com/50x50.png?text=Test",
+// };
+
+// class Welcome extends React.Component {
+//     //define constructor to get props that passed from ReactDOM.render method
+//     constructor(props) {
+//         super(props);
+//     }
+
+//     render() {
+//         return (
+//             <div>
+//                 <User username={this.props.user.name}/>
+//             </div>        
+//         )
+//     }
+// }
+
+// class User extends React.Component {
+//     constructor(props) {
+//         super(props);
+//     }
+
+//     render() {
+//         //why need to use this to use "props" => can't use props without "this"
+//         return <h1>Hello, {this.props.username} again!</h1>
+//     }
+// }
+
+// function formatDate(date) {
+//     return date.toLocaleDateString();
+//   }
+
+// //when create components => need to understand when to class and when to use function
+// function Avatar(props) {
+//     return (
+//         <img className="Avatar" 
+//             src={props.user.avatarUrl}
+//             alt={props.user.name}
+//         />
+//     );
+// }
+
+// function UserInfo(props) {
+//     return (
+//         <div className="UserInfo">
+//             <Avatar user={props.user} />
+//             <div className="UserInfo-name">
+//                 {props.user.name}
+//             </div>
+//         </div>
+//     );
+// }
+
+// class Comment extends React.Component {
+//     constructor(props) {
+//         super(props);
+//     }
+
+//     render() {
+//         return (
+//             <div className="Comment">
+//                 <UserInfo user = {this.props.user} />
+//                 <div className = "Comment-text">
+//                     {this.props.text}
+//                 </div>
+//                 <div className="Comment-data">
+//                     {formatDate(this.props.date)}
+//                 </div>
+//             </div>
+//         );
+//     }
+// }
+
+// const comment = {
+//     text: "Good morning",
+//     date: new Date(),
+//     user: {
+//         avatarUrl: "https://via.placeholder.com/50x50.png?text=Test",
+//         name: "Linh"
+//     }
+// }
+
+// //use "user" as DOM attribute but it's treated props in component
+// ReactDOM.render(<Comment 
+//                     user = {comment.user} 
+//                     text = {comment.text}
+//                     date = {comment.date}
+//                 />, document.getElementById("root"));
+
