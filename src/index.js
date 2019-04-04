@@ -339,8 +339,8 @@ class TemperatureInput extends React.Component {
         return (
             <fieldset>
                 <legend>Enter temperature in {scaleNames[scale]}:</legend>
-                <input value={temperature}
-                        onChange={this.handleChange} />
+                <input  value = {temperature}
+                        onChange = {this.handleChange} />
             </fieldset>
         );
     }
@@ -371,7 +371,7 @@ class Calculator extends React.Component {
         return (
             <div>
                 <TemperatureInput scale='c' temperature={celsius} onTemperatureChange={this.handleCelsiusChange} />
-                <TemperatureInput sacle='f'temperature={fahrenheit} onTemperatureChange={this.handleFahrenheitChange} />
+                <TemperatureInput scale='f' temperature={fahrenheit} onTemperatureChange={this.handleFahrenheitChange} />
             </div>
         );
     }
