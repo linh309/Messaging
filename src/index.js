@@ -211,30 +211,91 @@ import ReactDOM from 'react-dom';
 // );
 
 //Render number
-function ListItem(props) {
-    const value = props.value;
-    return (
-        <li>
-            {value}
-        </li>
-    );
+// function ListItem(props) {
+//     const value = props.value;
+//     return (
+//         <li>
+//             {value}
+//         </li>
+//     );
+// }
+
+// function NumberList(props) {
+//     const numbers = props.numbers;
+//     const listItems = numbers.map((number)=>
+//         <ListItem value={number} key={number.toString()} />
+//     );
+
+//     return (
+//         <ul>
+//             {listItems}
+//         </ul>
+//     );
+// }
+
+// const numbers = [1, 2, 3, 4, 5];
+// ReactDOM.render(
+//   <NumberList numbers={numbers} />,
+//   document.getElementById('root')
+// );
+
+
+class NameForm extends React.Component {
+    constructor (props) {
+        super(props);
+        this.state = {value: '', name: '',fruit: "",fruitSelectd: 'lime'};
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    handleChange(e) {        
+        const target = e.target;
+        const value = e.target.value;
+        var type = e.target.name === "yourname" ? "text" : e.target.name === "yourfruit" ? "select" : "";
+        if (type === "text") {
+            this.setState({
+                value: value,
+                name: ''
+            });
+        }
+        else if (type=== "select") {
+            this.setState({ 
+                fruitSelectd: e.target.value
+            });
+        }
+    }
+
+    handleSubmit(e) {
+        this.setState({
+            name: this.state.value,
+            fruit: this.state.fruitSelectd
+        });
+        e.preventDefault();
+    }
+
+    render() {
+        const listFruit = <select name="yourfruit" value={this.state.fruitSelectd} onChange={this.handleChange}>
+            <option value="grapefruit">Grapefruit</option>
+            <option value="lime">Lime</option>
+            <option value="coconut">Coconut</option>
+            <option value="mango">Mango</option>
+        </select>
+        return (
+            <form onSubmit={this.handleSubmit}>
+                <label>
+                    Name: <input type='text' name="yourname" value={this.state.value} onChange={this.handleChange} />
+                </label>
+                {listFruit}
+                <input type="submit" value="Alert Name" />                                
+                
+                <p>Welcome: {this.state.name}</p>
+                <p>Your drink is: {this.state.fruit}</p>
+            </form>
+        );
+    }
 }
 
-function NumberList(props) {
-    const numbers = props.numbers;
-    const listItems = numbers.map((number)=>
-        <ListItem value={number} key={number.toString()} />
-    );
-    
-    return (
-        <ul>
-            {listItems}
-        </ul>
-    );
-}
-
-const numbers = [1, 2, 3, 4, 5];
 ReactDOM.render(
-  <NumberList numbers={numbers} />,
+  <NameForm />,
   document.getElementById('root')
 );
