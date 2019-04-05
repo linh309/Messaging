@@ -1,3 +1,4 @@
+//Tutorial: Simple React Redux App by @nunosoaresdev https://medium.com/p/tutorial-simple-react-redux-app-cd559621ec00
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Provider} from 'react-redux';
