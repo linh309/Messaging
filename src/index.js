@@ -1,5 +1,238 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {Provider} from 'react-redux';
+import {createStore} from 'redux';
+import { connect } from "react-redux";
+import './comment.css';
+
+const actionName = {
+    ADD_POST: 'ADD_POST',
+    DELETE_POST: 'DELETE_POST',
+    EDIT_POST: 'EDIT_POST',
+    UPDATE_POST: 'UPDATE_POST'
+}
+
+
+/********************************************************************* <PostForm /> Component ********************************************************************* */
+class PostFormComponent extends React.Component {
+    handleSubmit = (e) => {
+        e.preventDefault();
+        const title = this.getTitle.value;
+        const message = this.getMessage.value;
+        const data = {
+            id: new Date(),
+            title,
+            message,
+            editing: false
+        };
+
+        //dispatch an action and it will be passed to reducer as an input
+        this.props.dispatch({
+            type: actionName.ADD_POST,
+            data
+        });
+
+        //After submit form should clear value
+        this.getTitle.value = '';
+        this.getMessage.value = '';
+    }
+
+    render() {
+        return (
+            <div className="post-container">
+                <h1 className="post_heading">Create Post</h1>
+                <form className="form" onSubmit={this.handleSubmit}>
+                    <input required type="text" placeholder="Enter Post Title" ref={(input)=>this.getTitle = input}/><br /><br />
+                    <textarea required rows="5" cols="28" placeholder="Enter Post" ref={(input)=>this.getMessage = input} /><br /><br />
+                    <button>Post</button>
+                </form>
+            </div>
+        );
+    }
+}
+
+//call connect() method from Redux to pass dispatch() from Redux store as props of component
+//because connect() will create new component so can't use original component to use dispatch() as props
+const PostForm = connect()(PostFormComponent);
+
+/********************************************************************* <PostForm /> Component ********************************************************************* */
+
+
+
+
+/********************************************************************* <Post /> Component ********************************************************************* */
+
+class PostComponent extends React.Component {
+    constructor(props){
+        super(props);
+        this.onDeletePost = this.onDeletePost.bind(this);
+        this.onEditPost = this.onEditPost.bind(this);
+    }
+
+    onDeletePost(e) {
+        this.props.dispatch({
+            type: actionName.DELETE_POST,
+            id: this.props.post.id
+        });
+    }
+
+    onEditPost(e) {
+        this.props.dispatch({
+            type: actionName.EDIT_POST,
+            id: this.props.post.id
+        });
+    }
+
+    render() {
+        return (
+            <div className="post">
+                <h2 className="post_title">{this.props.post.title}</h2>
+                <p className="post_message">{this.props.post.message}</p>
+                <div className="control-buttons">
+                    <button className="edit" onClick={this.onEditPost}>Edit</button>
+                    <button className="delete" onClick={this.onDeletePost}>
+                        Delete
+                    </button>
+                </div>
+            </div>
+        );
+    }
+}
+
+const Post = connect()(PostComponent);
+
+/********************************************************************* <Post /> Component ********************************************************************* */
+
+
+/********************************************************************* <EditPost /> Component ********************************************************************* */
+class EditPostComponent extends React.Component {
+    constructor(props) {
+        super(props);
+        this.onUpdatePost = this.onUpdatePost.bind(this);
+    }
+
+    onUpdatePost(e) {
+        e.preventDefault();
+        const action = {
+            type: actionName.UPDATE_POST,
+            id: this.props.post.id,
+            data: {
+                newTitle: this.getTitle.value,
+                newMessage: this.getMessage.value                
+            }
+        }
+
+        this.props.dispatch(action);
+    }
+
+    render() {
+        return (
+            <div className="post">
+                <form className="form" onSubmit={this.onUpdatePost}>
+                    <input required type="text" ref={(input) => this.getTitle = input} 
+                        defaultValue={this.props.post.title} placeholder="Enter Post Title" /><br /><br />
+                    <textarea required rows="5" ref={(input) => this.getMessage = input} 
+                        defaultValue={this.props.post.message} cols="28" placeholder="Enter Post" /><br /><br />
+                    <button>Update</button>
+                </form>
+            </div>
+        );
+    }
+}
+
+const EditPost = connect()(EditPostComponent);
+
+/********************************************************************* <EditPost /> Component ********************************************************************* */
+
+
+
+/********************************************************************* <AllPost /> Component ********************************************************************* */
+class AllPostComponent extends React.Component {
+    render() {
+        return (
+            <div>
+                <h1 className="post_heading">All Posts</h1>
+                {this.props.posts.map((post) => (
+                    <div key={post.id}>                        
+                        {post.editing
+                            ? <EditPost key={post.id} post={post} />
+                            : <Post     key={post.id} post={post} />}
+                    </div>
+                ))}
+            </div>
+        );
+    }
+}
+
+const mapStateToProps = (state) => {
+    return {
+        posts: state
+    }
+}
+
+const AllPost = connect(mapStateToProps)(AllPostComponent);
+
+/********************************************************************* <AllPost /> Component ********************************************************************* */
+
+
+class App extends React.Component {
+    render() {
+        return (
+            <div className="App">
+                <div className="navbar">
+                    <h2 class="center">Post It</h2>                    
+                </div>
+                <PostForm />
+                <AllPost />
+            </div>
+        );
+    }
+}
+
+//define reducer. Why always define default value for current state??
+const postReducer = (state = [], action) => {
+    switch (action.type) {
+        case actionName.ADD_POST:
+            console.log(`pass action to reducer at. Data: ${action}`);
+            return state.concat([action.data])
+
+        case actionName.DELETE_POST:
+            return state.filter((post)=>post.id != action.id)
+        
+        case actionName.EDIT_POST:
+            return state.map((post) => post.id===action.id ? {...post,editing:!post.editing}:post)
+
+        case actionName.UPDATE_POST:
+            //close edit form
+            //update the current element => Set edit = false
+            return state.map((post)=>{
+                if(post.id === action.id) {
+                  return {
+                     ...post,
+                     title:action.data.newTitle,
+                     message:action.data.newMessage,
+                     editing: !post.editing
+                  }
+                } else return post;
+              })
+
+        default: 
+            return state;
+    }
+}
+
+//define store (Single source of truth principle) for whole application, the special argument must be passed to this method is "reducers"
+const store = createStore(postReducer);
+
+//<App /> is wrapped by <Provider> element and we don't need to define a "Provider" class
+ReactDOM.render(
+    <Provider store={store}> 
+        <App />
+    </Provider>,
+    document.getElementById("root"));
+
+
+
 
 // import './index.css';
 // import App from './App';
@@ -300,81 +533,84 @@ import ReactDOM from 'react-dom';
 //   document.getElementById('root')
 // );
 
-function toCelsius(fahrenheit) {
-    return (fahrenheit - 32) * 5 / 9;
-}
+// function toCelsius(fahrenheit) {
+//     return (fahrenheit - 32) * 5 / 9;
+// }
   
-function toFahrenheit(celsius) {
-    return (celsius * 9 / 5) + 32;
-}
+// function toFahrenheit(celsius) {
+//     return (celsius * 9 / 5) + 32;
+// }
 
-function tryConvert(temperature, convert) {
-    const input = parseFloat(temperature);
-    if (Number.isNaN(input)) {
-      return '';
-    }
-    const output = convert(input);
-    const rounded = Math.round(output * 1000) / 1000;
-    return rounded.toString();
-}
+// function tryConvert(temperature, convert) {
+//     const input = parseFloat(temperature);
+//     if (Number.isNaN(input)) {
+//       return '';
+//     }
+//     const output = convert(input);
+//     const rounded = Math.round(output * 1000) / 1000;
+//     return rounded.toString();
+// }
 
-const scaleNames = {
-    c: 'Celsius',
-    f: 'Fahrenheit'
-  };
+// const scaleNames = {
+//     c: 'Celsius',
+//     f: 'Fahrenheit'
+//   };
 
-class TemperatureInput extends React.Component {
-    constructor(props) {
-        super(props);
-        this.handleChange = this.handleChange.bind(this);
-    }
+// class TemperatureInput extends React.Component {
+//     constructor(props) {
+//         super(props);
+//         this.handleChange = this.handleChange.bind(this);
+//     }
 
-    handleChange(e) {
-        this.props.onTemperatureChange(e.target.value);
-    }
+//     handleChange(e) {
+//         this.props.onTemperatureChange(e.target.value);
+//     }
 
-    render() {
-        const temperature = this.props.temperature;
-        const scale = this.props.scale;
-        return (
-            <fieldset>
-                <legend>Enter temperature in {scaleNames[scale]}:</legend>
-                <input  value = {temperature}
-                        onChange = {this.handleChange} />
-            </fieldset>
-        );
-    }
-}
+//     render() {
+//         const temperature = this.props.temperature;
+//         const scale = this.props.scale;
+//         return (
+//             <fieldset>
+//                 <legend>Enter temperature in {scaleNames[scale]}:</legend>
+//                 <input  value = {temperature}
+//                         onChange = {this.handleChange} />
+//             </fieldset>
+//         );
+//     }
+// }
 
-class Calculator extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {temperature: '', scale: 'c'};
-        this.handleCelsiusChange = this.handleCelsiusChange.bind(this);
-        this.handleFahrenheitChange = this.handleFahrenheitChange.bind(this);
-    }
+// class Calculator extends React.Component {
+//     constructor(props) {
+//         super(props);
+//         this.state = {temperature: '', scale: 'c'};
+//         this.handleCelsiusChange = this.handleCelsiusChange.bind(this);
+//         this.handleFahrenheitChange = this.handleFahrenheitChange.bind(this);
+//     }
 
-    handleCelsiusChange(temperature) {
-        this.setState({scale:'c', temperature});
-    }
+//     handleCelsiusChange(temperature) {
+//         this.setState({scale:'c', temperature});
+//     }
 
-    handleFahrenheitChange(temperature) {
-        this.setState({scale: 'f', temperature});
-    }  
+//     handleFahrenheitChange(temperature) {
+//         this.setState({scale: 'f', temperature});
+//     }  
 
-    render() {
-        const scale = this.state.scale;
-        const temperature = this.state.temperature;
-        const celsius = scale === 'f' ? tryConvert(temperature, toCelsius) : temperature;
-        const fahrenheit = scale === 'c' ? tryConvert(temperature, toFahrenheit) : temperature;
+//     render() {
+//         const scale = this.state.scale;
+//         const temperature = this.state.temperature;
+//         const celsius = scale === 'f' ? tryConvert(temperature, toCelsius) : temperature;
+//         const fahrenheit = scale === 'c' ? tryConvert(temperature, toFahrenheit) : temperature;
         
-        return (
-            <div>
-                <TemperatureInput scale='c' temperature={celsius} onTemperatureChange={this.handleCelsiusChange} />
-                <TemperatureInput scale='f' temperature={fahrenheit} onTemperatureChange={this.handleFahrenheitChange} />
-            </div>
-        );
-    }
-}
+//         return (
+//             <div>
+//                 <TemperatureInput scale='c' temperature={celsius} onTemperatureChange={this.handleCelsiusChange} />
+//                 <TemperatureInput scale='f' temperature={fahrenheit} onTemperatureChange={this.handleFahrenheitChange} />
+//             </div>
+//         );
+//     }
+// }
 
-ReactDOM.render(<Calculator />, document.getElementById("root"));
+// ReactDOM.render(<Calculator />, document.getElementById("root"));
+
+
+
