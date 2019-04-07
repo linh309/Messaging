@@ -7,6 +7,8 @@ import {Route, Link} from 'react-router-dom';
 import Home from '../home';
 import About from '../about';
 
+
+
 //need to include home and about components
 const App = () => (
     <div>

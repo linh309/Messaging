@@ -1,9 +1,8 @@
 import { createStore, applyMiddleware, compose } from 'redux';
-import { connectRouter, routerMiddleware } from 'connected-react-router';
+import { routerMiddleware } from 'connected-react-router';
 import thunk from 'redux-thunk';
 import createHistory from 'history/createBrowserHistory';
 import rootReducer from './modules';
-import createRootReducer from './modules';
 
 //define then export history to outside of module
 export const history = createHistory();
@@ -36,8 +35,7 @@ const composeEnhancers = compose(
 //create reduxt store will parameters
 //configure store to use middleware
 const store = createStore (
-    //connectRouter(history)(rootReducer),
-    createRootReducer(history),
+    rootReducer(history),
     initialState,
     composeEnhancers
 );
