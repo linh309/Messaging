@@ -11,11 +11,14 @@
 import {push} from 'connected-react-router';
 
 export const increment = () => {
-    debugger;
-    push('/about-us');
+    // debugger;
+    // push('/about-us');
     return dispatch => {
       dispatch({
         type: "Incrementing"
       })
     }
-  }
+}
+
+
+

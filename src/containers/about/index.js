@@ -4,15 +4,6 @@ import {push} from 'connected-react-router';
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-// const About = props => (
-//     <div>
-//       <h1>About Us</h1>
-//       <p>Hello Medium!</p>
-//       <button onClick={()=>props.changePage()}>Back to home page</button>
-//     </div>
-// )
-
-
 class About extends React.Component {
   constructor(props) {
     super(props);
@@ -20,11 +11,17 @@ class About extends React.Component {
   }
 
   onBackToHomePage() {
-    debugger;
-    // this.props.push.dispatch({
+    // this.props.dispatch({
     //   type: "Incrementing"
-    // });
-    this.props.push('/');
+    // })
+
+    setTimeout(() => {
+      this.props.dispatch({
+        type: "Incrementing"
+      })
+    }, 2000)
+
+    this.props.dispatch(push('/'));
   }
 
   render() {
@@ -39,11 +36,10 @@ class About extends React.Component {
 }
 
 const mapDispatchToProps = (dispatch) => ({
-  //actions: bindActionCreators(authActionCreators, dispatch),
   push: bindActionCreators(push, dispatch)
 })
 
 export default connect (
   null,
-  mapDispatchToProps
+  null
 )(About);
