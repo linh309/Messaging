@@ -1,7 +1,10 @@
 export const initialState = {
     currentUser: {
+        userkey: '',
         username: '',
-        avatar: ''
-    },
-    
+        avatar: '',
+        isLogin: false,
+        lastLogin: null,
+        friendList: []
+    }
 };

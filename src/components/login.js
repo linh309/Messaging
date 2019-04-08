@@ -6,53 +6,37 @@ import {AccountAction} from '../common/constants';
 
 class Login extends React.Component {
     constructor(props) {
-        super(props);       
-        this.handleChange = this.handleChange.bind(this);
+        super(props);   
         this.onLogin = this.onLogin.bind(this);
-    }
-
-    handleChange(e) {
-        const value = e.target.value;
-        const field = e.target.name;
-        switch (field) {
-            case "username":
-                this.setState({
-                    username: value
-                });
-                break;
-            case "password":
-                this.setState({
-                    password: value
-                });
-                break;                   
-        }
     }
 
     onLogin(e) {
         const that = this;
-        const stateUserName = this.state.username;
-        const statePassword = this.state.password;
+        const username = this.username.value;
+        const password = this.password.value;
 
         accountRef
             .orderByChild("username")
-            .equalTo(this.state.username)
-            .on('value', (snapshot) => {
+            .equalTo(username)
+            .once('value', (snapshot) => {
                 const data = snapshot.val();
                 const isExisted = data !== null;
 
                 if (isExisted) {
                     snapshot.forEach((userData)=> {
-                        const userId = userData.key;
+                        const userkey = userData.key;
                         const user = userData.val();
-                        if (user.username===stateUserName && user.password === statePassword)
+                        if (user.username === username && user.password === password)
                         {
                             that.props.dispatch
                             ({
                                 type: AccountAction.Login,
                                 data: {
                                     currentUser: {
+                                        userkey: userkey,
                                         username: user.username,
-                                        avatar: user.avatarurl
+                                        avatar: user.avatarurl,
+                                        isLogin: true
                                 }}
                             }) 
     
@@ -79,10 +63,10 @@ class Login extends React.Component {
                         <div className="card-body">
                             <form onSubmit={this.onLogin} autoComplete="off">
                                 <div className="form-group">
-                                    <input type="text" className="form-control" name="username" value={this.state.username} onChange={this.handleChange}/>
+                                    <input type="text" className="form-control" name="username" value="linh" ref={(input) => this.username = input} />
                                 </div>
                                 <div className="form-group">
-                                    <input type="password" className="form-control" name="password"  value={this.state.password} onChange={this.handleChange}/>
+                                    <input type="password" className="form-control" name="password" value="123456" ref={(input) => this.password = input}/>
                                 </div>
                                 <button type="submit" id="sendlogin" className="btn btn-primary">login</button>
                             </form>
@@ -93,13 +77,6 @@ class Login extends React.Component {
         )
     }
 }
-
-const mapStateToProps = (state) => {
-    return {
-        username: state.currentUser.username,
-        password: ''
-    }
-};
 
 export default connect(
     null,

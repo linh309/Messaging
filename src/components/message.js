@@ -4,50 +4,71 @@ import {connect} from 'react-redux';
 import {push} from 'connected-react-router';
 import {AccountAction} from '../common/constants'
 
+const FriendList = (props) => {
+    if (props.list===null || props.list===undefined) return null;
+    const activeClass = "list-group-item list-group-item-action flex-column align-items-start";
+    const list = props.list.map((item, index)=> 
+        
+        <button key={item.userkey} href="#" className={index==0?activeClass+" active":activeClass}>
+             <img className="user-avatar" src={item.avatar} alt="avatar" />
+             <div className="about">
+                <div className="name">{item.username}</div>
+                <div className="status">
+                    <i className="fa fa-circle online"></i> online
+                </div>
+            </div>
+        </button>
+    )
+
+    return (
+        <div className="list-group list-user">
+            {list}
+        </div>
+    );    
+}
+
 class Message extends React.Component {
     constructor(props) {
         super(props);
     }
 
-    
-
     render() {
         return (
-            <div className="row">
+            <div className="row" className="message">
                 <div className='col-12'>
                     <h1>Message</h1>
                 </div>
                 <div className='col-3'>
-                    <div className="list-group list-user">
-                        <a href="#" className="list-group-item list-group-item-action flex-column align-items-start active">
-                            <img className="user-avatar" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01.jpg" alt="avatar" />
-                            <div class="about">
-                                <div class="name">Vincent Porter</div>
-                                <div class="status">
-                                    <i class="fa fa-circle online"></i> online
-                                </div>
-                            </div>
-                        </a>
-                        <a href="#" className="list-group-item list-group-item-action flex-column align-items-start">
-                            <img className="user-avatar" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01.jpg" alt="avatar" />
-                            <div class="about">
-                                <div class="name">Vincent Porter</div>
-                                <div class="status">
-                                    <i class="fa fa-circle online"></i> Last seen 5 days ago
-                                </div>
-                            </div>                          
-                        </a>
-                    </div>
+                    <FriendList list={this.props.friendList} />
                 </div>
                 <div className='col-9'>
+                    <div className="card text-white bg-info no-border-radius">
+                        <div className="card-header"><h4>Messages</h4></div>
+                        <div className="card-body bg-white">
 
+                        </div>
+                        <div className="card-footer text-muted bg-white no-border-radius">
+                            <form className="form-inline">
+                                <div className="form-group mx-sm-3 mb-2 col-sm-9 margin-left-0">                                    
+                                    <input type="text" class="form-control" placeholder="messages" style={{width: "100%"}} />                                
+                                </div>
+                                <button type="submit" class="btn btn-primary mb-2">Send</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
     }
 }
 
+const mapStateToProps = ({account}) => {
+    return {
+        friendList: account.currentUser.friendList
+    }
+}
+
 export default connect(
-    null,
+    mapStateToProps,
     null
 )(Message)
