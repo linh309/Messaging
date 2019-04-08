@@ -4,11 +4,9 @@ import {Provider} from 'react-redux';
 import {ConnectedRouter} from 'connected-react-router';
 import store, {history} from './store';
 import App from './containers/app';
-
-import Register from './components/register'
-
 //import CSS
 import 'bootstrap/dist/css/bootstrap.css';
+import './css/app.css'
 
 ReactDOM.render(
     <Provider store={store}>

@@ -6,5 +6,10 @@ export const initialState = {
         isLogin: false,
         lastLogin: null,
         friendList: []
-    }
+    },
+    currentMessaging: {
+        fromUserKey: "",
+        toUserKey: ""
+    },
+    conversations: []
 };

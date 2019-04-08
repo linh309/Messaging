@@ -10,7 +10,6 @@ import Register from '../../components/register';
 import Welcome from '../../components/Welcome';
 import Login from '../../components/login';
 import Message from '../../components/message';
-import '../../css/app.css';
 
 //need to include home and about components
 const App = () => (

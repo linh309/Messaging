@@ -21,3 +21,20 @@
 .margin-left-0 {
     margin-left: 0px !important;
 }
+
+.message-from {
+    border: none;
+}
+
+.message-from.right {
+    text-align: right;
+}
+
+.message-from.left {
+    text-align: left;
+}
+
+.message-text {
+    padding: 10px;
+    border-radius: 20px;
+}

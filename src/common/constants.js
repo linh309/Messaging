@@ -1,5 +1,6 @@
 export const AccountAction = {
     Register: "REGISTER",
     Login: "LOGIN",
-    StartMessaging: "MESSAGING"
+    StartMessaging: "MESSAGING",
+    InitializeMessage: "INITIALIZE_MESSAGING"
 }

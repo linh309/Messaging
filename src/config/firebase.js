@@ -6,4 +6,5 @@ export const databaseRef = firebase.database().ref();
 
 export const todoRef = databaseRef.child("todos");
 export const accountRef = databaseRef.child("account");
+export const conversationRef = databaseRef.child("conversations");
 

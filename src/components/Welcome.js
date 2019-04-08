@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {accountRef} from "../config/firebase";
+import {accountRef, conversationRef} from "../config/firebase";
 import {push} from 'connected-react-router';
 import {AccountAction} from '../common/constants';
 
@@ -12,18 +12,22 @@ class Welcome extends React.Component {
 
     onStartMessaging(e) {        
         const that = this;
+
+        //Get list of all current accounts
         accountRef.once("value", snapshot => {
             const friendList = [];
+            let userKeyTo = "";                    
             snapshot.forEach((item) => {                               
                 const user = item.val(); 
                 const userkey = item.key;                
-                if (user !== null && that.props.userkey !== userkey ) {                    
+                if (user !== null && that.props.userkey !== userkey ) {
                     friendList.push({
                         userkey: userkey, 
                         username: user.username,
                         avatar: user.avatarurl,
                         isLogin: user.isLogin!==undefined?user.isLogin:false
                     });                    
+                    userKeyTo = userKeyTo === "" ? userkey : userKeyTo;
                 }
             })
 
@@ -33,13 +37,56 @@ class Welcome extends React.Component {
                 data: {
                     currentUser: {
                         friendList: friendList
+                    },
+                    currentMessaging: {
+                        fromUserKey: that.props.userkey, //currently, current user is always the User sent message
+                        toUserKey: userKeyTo
                     }
                 }
             });
-
-            //Redirect to Message page
-            that.props.dispatch(push('/Message'));
         })
+
+        //Get list of messages
+         conversationRef
+            .orderByChild("fromUserKey")
+            .equalTo(that.props.userkey) //Currently, get all messages that were sent by current user
+            .once("value", snapshot => {
+                const conversations = [];
+                snapshot.forEach((item) => {
+                    const key = item.key;
+                    const itemData = item.val();
+
+                    const listMessages = [];
+                    itemData.messages.forEach((itemMessage)=> {
+                        listMessages.push({
+                            content: itemMessage.content,
+                            sentDate: itemMessage.sentDate,
+                            sentFromUserKey: itemMessage.sentFromUserKey,
+                            sentToUserKey: itemMessage.sentToUserKey
+                        });
+                    })
+
+                    conversations.push({
+                        conversationKey: key,
+                        fromUserKey: itemData.fromUserKey,
+                        toUserKey: itemData.toUserKey,
+                        lastSentMessageDate: itemData.lastSentMessageDate,
+                        messages: listMessages
+                    })
+                })
+
+                that.props.dispatch({
+                    type: AccountAction.InitializeMessage,
+                    data: {
+                        conversations: conversations
+                    }
+                })
+            })
+
+        
+
+        //Redirect to Message page
+        that.props.dispatch(push('/Message'));
     }
 
     render() {
