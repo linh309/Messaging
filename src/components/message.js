@@ -48,7 +48,7 @@ const MessageList = (props) => {
         <MessageItem 
             key={index}
             sentFromUserKey={item.sentFromUserKey}   
-            senToUserKey={item.sentFromUserKey}   
+            senToUserKey={item.sentToUserKey}   
             currentUserKey={item.currentUserKey}  
             content = {item.content}    
         /> 
@@ -71,8 +71,8 @@ class Message extends React.Component {
 
     componentDidMount() {
         const that = this;
-        const convRef = database.ref(FirebasePath.conversations);
         const sendMessageAction = AccountAction.SendMessage;
+        const convRef = database.ref(FirebasePath.conversations);
 
         convRef.on("value", snapshot => {            
             const conversations = snapshot.val();
@@ -112,8 +112,10 @@ class Message extends React.Component {
         const convRef = database.ref(FirebasePath.conversations);
 
         convRef.once("value", snapshot => {
-            const isExisted = snapshot.val() !== null;
+            const conversations = snapshot.val();
+            const isExisted = conversations !== null;
             if (!isExisted) {                
+                //this is the first time the conversations list is created
                 convRef.push().set({
                     fromUserKey: that.props.fromUserKey,
                     toUserKey: that.props.toUserKey,
@@ -127,34 +129,62 @@ class Message extends React.Component {
                 });
             }
             else {
-                conversationRef
-                    .child(this.props.conversationKey + "/messages")
-                    .once("value", snapshot => {
-                        const currentMessages =  snapshot.val();            
-                        const messages = currentMessages === null || currentMessages === undefined ? [] : currentMessages;
-                        const updatedConversationRef = conversationRef.child(that.props.conversationKey);
+                //need to check whether the conversation between fromUser and toUser exist before or not
+                let isExistedConversation = false;
+                const convKeys = Object.keys(conversations);
 
-                        //add new message
-                        messages.push({
-                            content,
-                            sendDate,
-                            sentFromUserKey: that.props.fromUserKey,
-                            sentToUserKey: that.props.toUserKey,
-                        });
+                convKeys.forEach((key) => {
+                    const conversationData = conversations[key];
+                    const chatUsers = [that.props.fromUserKey, that.props.toUserKey];
+                    isExistedConversation =         chatUsers.indexOf(conversationData.fromUserKey) >= 0 
+                                                &&  chatUsers.indexOf(conversationData.toUserKey) >= 0 
+                                                &&  !isExistedConversation                    
+                })
 
-                        //Update messages for conversation
-                        updatedConversationRef.update({
-                            messages: messages              
-                        });
+                if (isExistedConversation) {
+                    conversationRef
+                        .child(this.props.conversationKey + "/messages")
+                        .once("value", snapshot => {
+                            const currentMessages =  snapshot.val();            
+                            const messages = currentMessages === null || currentMessages === undefined ? [] : currentMessages;
+                            const updatedConversationRef = conversationRef.child(that.props.conversationKey);
 
-                        //Each time a message is sent need to update lastSentMessageDate
-                        const conv = conversationRef.child(this.props.conversationKey);
-                        conv.update({                    
-                            lastSentMessageDate: (new Date()).getTime()
-                        });
+                            //add new message
+                            messages.push({
+                                content,
+                                sendDate,
+                                sentFromUserKey: that.props.fromUserKey,
+                                sentToUserKey: that.props.toUserKey,
+                            });
 
-                        this.messageContent.value = "";
-                    })
+                            //Update messages for conversation
+                            updatedConversationRef.update({
+                                messages: messages              
+                            });
+
+                            //Each time a message is sent need to update lastSentMessageDate
+                            const conv = conversationRef.child(this.props.conversationKey);
+                            conv.update({                    
+                                lastSentMessageDate: (new Date()).getTime()
+                            });
+
+                            this.messageContent.value = "";
+                        })
+                }
+                else {
+                    //create new conversation between 2 users
+                    convRef.push().set({
+                        fromUserKey: that.props.fromUserKey,
+                        toUserKey: that.props.toUserKey,
+                        lastSentMessageDate: sendDate,
+                        messages: [{
+                            content : content,
+                            sendDate : sendDate,
+                            sentFromUserKey : that.props.fromUserKey,
+                            sentToUserKey : that.props.toUserKey
+                        }]
+                    });
+                }
             }
 
             this.messageContent.value = "";
@@ -202,7 +232,7 @@ class Message extends React.Component {
                         <div className="card-header"><h4>Messages</h4></div>
                         <div className="card-body bg-white" style={{overflow: "scroll", height: "600px"}}>
                             <div className="list-group">
-                                <MessageList messageList={this.getMessageList()}  />                              
+                                <MessageList messageList={this.getMessageList()}  />
                             </div>
                         </div>
                         <div className="card-footer text-muted bg-white no-border-radius">

@@ -30,14 +30,16 @@ export default (state = initialState, action) => {
                 isLogin: true,
                 lastLogin: new Date()
             });
+            const refreshState = Object.assign({}, initialState, state);
 
-            return Object.assign(
+            const loginState = Object.assign(
                 {}, 
-                state, 
+                refreshState, 
                 {
                     currentUser: Object.assign({}, state.currentUser, action.data.currentUser)
-                }
-            );
+                });
+
+            return loginState;
         
         case AccountAction.InitializeMessage:        
             const currentState =  Object.assign(

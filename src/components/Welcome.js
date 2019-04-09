@@ -45,60 +45,9 @@ class Welcome extends React.Component {
                 }
             });
         })
-
-        //Get list of messages
-        conversationRef
-            .orderByChild("fromUserKey")
-            .equalTo(that.props.userkey) //Currently, get all messages that were sent by current user
-            .once("value", snapshot => {
-                const conversations = [];
-                let conversationKey = "";
-
-
-                snapshot.forEach((item) => {
-                    const key = item.key;
-                    const itemData = item.val();
-
-                    const listMessages = [];                    
-                    if (itemData.messages !== undefined) {                
-                        itemData.messages.forEach((itemMessage)=> {
-                            listMessages.push({
-                                content: itemMessage.content,
-                                sentDate: itemMessage.sentDate,
-                                sentFromUserKey: itemMessage.sentFromUserKey,
-                                sentToUserKey: itemMessage.sentToUserKey
-                            });
-                        })
-                    }
-
-                    conversations.push({
-                        conversationKey: key,
-                        fromUserKey: itemData.fromUserKey,
-                        toUserKey: itemData.toUserKey,
-                        lastSentMessageDate: itemData.lastSentMessageDate,
-                        messages: listMessages
-                    })
-
-                    //get current conversation key that maps to current fromUserKey and toUserKey               
-                    conversationKey = conversationKey === "" 
-                                        && that.props.userkey === itemData.fromUserKey
-                                        &&  itemData.toUserKey === userKeyTo
-                                    ? key
-                                    : conversationKey;
-
-                })
-                
-                that.props.dispatch({
-                    type: AccountAction.InitializeMessage,
-                    data: {
-                        conversations: conversations,
-                        currentMessaging: { conversationKey }
-                    }
-                })
-
-                //Redirect to Message page
-                that.props.dispatch(push('/Message'));
-        })
+        
+        //Redirect to Message page
+        that.props.dispatch(push('/Message'));
     }
 
     render() {
