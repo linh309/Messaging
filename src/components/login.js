@@ -63,10 +63,10 @@ class Login extends React.Component {
                         <div className="card-body">
                             <form onSubmit={this.onLogin} autoComplete="off">
                                 <div className="form-group">
-                                    <input type="text" className="form-control" name="username" value="linh" ref={(input) => this.username = input} />
+                                    <input type="text" className="form-control" name="username" ref={(input) => this.username = input} />
                                 </div>
                                 <div className="form-group">
-                                    <input type="password" className="form-control" name="password" value="123456" ref={(input) => this.password = input}/>
+                                    <input type="password" className="form-control" name="password" ref={(input) => this.password = input}/>
                                 </div>
                                 <button type="submit" id="sendlogin" className="btn btn-primary">login</button>
                             </form>

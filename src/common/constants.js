@@ -5,3 +5,7 @@ export const AccountAction = {
     InitializeMessage: "INITIALIZE_MESSAGING",
     SendMessage: "SEND_MESSAGE"
 }
+
+export const FirebasePath = {
+    conversations: "conversations"
+}

@@ -55,22 +55,36 @@ export default (state = initialState, action) => {
         case AccountAction.SendMessage:
             debugger;
             const conversations = [];
-            state.conversations.map((conv) => {
-                if (conv.conversationKey === action.data.conversationKey) {
-                    conv.messages = action.data.messages;
-                }
+            let currentMessaging = state.currentMessaging;
 
-                conversations.push(conv);
-            });
+            if (state.conversations !== undefined && state.conversations.length <= 0) {
+                conversations.push(action.data.conversation);
+                currentMessaging = Object.assign(
+                    {},
+                    {...currentMessaging}, 
+                    {
+                        conversationKey: action.data.conversation.conversationKey                    
+                    });
+            }
+            else {
+                state.conversations.map((conv) => {
+                    if (conv.conversationKey === action.data.conversation.conversationKey) {
+                        conv.messages = action.data.conversation.messages;
+                    }
 
-            const state1 =  Object.assign(
+                    conversations.push(conv);
+                });
+            }
+
+            let stateConversation =  Object.assign(
                 {},
                 state, 
                 {
+                    currentMessaging: currentMessaging,
                     conversations: conversations                    
                 });
 
-            return state1;                
+            return stateConversation;                
 
         default:
             return state;

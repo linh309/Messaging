@@ -1,8 +1,8 @@
 import React from 'react';
-import {conversationRef} from "../config/firebase";
+import {database, conversationRef} from '../config/firebase';
 import {connect} from 'react-redux';
 import {push} from 'connected-react-router';
-import {AccountAction} from '../common/constants'
+import {AccountAction, FirebasePath} from '../common/constants'
 
 const FriendList = (props) => {
     if (props.list===null || props.list===undefined) return null;
@@ -69,112 +69,102 @@ class Message extends React.Component {
         
     }
 
-    componentDidMount() {   
-        // const sendMessageAction = AccountAction.SendMessage     
-        // const that = this;        
-        // debugger;
-
-        // if (this.props.conversationKey !==undefined && this.props.conversationKey !== "") {                 
-        //     debugger;
-        //     conversationRef
-        //     .child(this.props.conversationKey)
-        //     .on("value", snapshot => {
-        //         debugger;
-        //         const conversation = that.props.conversationKey !== "" 
-        //                                 ?  snapshot.val()[that.props.conversationKey]
-        //                                 : null;                                        
-        //         if (conversation !== null && conversation !== undefined && conversation.messages !== undefined && conversation.messages.length) {
-        //             const messages =  conversation.messages;                    
-        //             that.props.dispatch({
-        //                 type: sendMessageAction,
-        //                 data: {
-        //                     conversationKey: that.props.conversationKey,
-        //                     messages: messages
-        //                 }
-        //             })                   
-        //         }
-        //     })
-        // }
-        debugger;
-        const convKey = this.props.conversationKey;
+    componentDidMount() {
         const that = this;
+        const convRef = database.ref(FirebasePath.conversations);
         const sendMessageAction = AccountAction.SendMessage;
-        if (this.props.conversationKey !== undefined && this.props.conversationKey !== "") {      
-            conversationRef
-                .child(convKey)
-                .on("value", snapshot => {
-                    debugger;
-                    const convData = snapshot.val();
-                    const messages = convData !== null && convData !== undefined ? convData.messages : null;
-                    if (messages !== null) {                                 
-                        that.props.dispatch({
-                            type: sendMessageAction,
-                            data: {
-                                conversationKey: convKey,
-                                messages: messages
-                            }
-                        })                   
+
+        convRef.on("value", snapshot => {            
+            const conversations = snapshot.val();
+            if (conversations != null ) {
+                const convKeys = Object.keys(conversations);
+                convKeys.forEach((key) => {
+                    const conversationData = conversations[key];
+                    const chatUsers = [that.props.fromUserKey, that.props.toUserKey];
+                    if (chatUsers.indexOf(conversationData.fromUserKey) >= 0 && chatUsers.indexOf(conversationData.toUserKey) >= 0) {
+                        const messages = conversationData !== null && conversationData !== undefined ? conversationData.messages : null;
+                        if (messages !== null) {
+                            that.props.dispatch({
+                                type: sendMessageAction,
+                                data: 
+                                    {
+                                        conversation: {
+                                            conversationKey: key,
+                                            fromUserKey: conversationData.fromUserKey,
+                                            toUserKey: conversationData.toUserKey,
+                                            lastSentMessageDate: conversationData.lastSentMessageDate,      
+                                            messages: messages
+                                        }
+                                    }
+                                }
+                            )
+                        }
                     }
                 })
-        }        
+            }
+        })
     }
     
-    onSendMessage(e) {                 
+    onSendMessage(e) {    
         const content = this.messageContent.value;   
         const sendDate = (new Date()).getTime();
         const that = this;
-        const sendMessageAction = AccountAction.SendMessage
+        const convRef = database.ref(FirebasePath.conversations);
 
-        conversationRef
-            .child(this.props.conversationKey + "/messages")
-            .once("value", snapshot => {
-                const currentMessages =  snapshot.val();            
-                const messages = currentMessages === null || currentMessages === undefined ? [] : currentMessages;
-                const updatedConversationRef = conversationRef.child(that.props.conversationKey);
-
-                //add new message
-                messages.push({
-                    content,
-                    sendDate,
-                    sentFromUserKey: that.props.fromUserKey,
-                    sentToUserKey: that.props.toUserKey,
+        convRef.once("value", snapshot => {
+            const isExisted = snapshot.val() !== null;
+            if (!isExisted) {                
+                convRef.push().set({
+                    fromUserKey: that.props.fromUserKey,
+                    toUserKey: that.props.toUserKey,
+                    lastSentMessageDate: sendDate,
+                    messages: [{
+                        content : content,
+                        sendDate : sendDate,
+                        sentFromUserKey : that.props.fromUserKey,
+                        sentToUserKey : that.props.toUserKey
+                    }]
                 });
+            }
+            else {
+                conversationRef
+                    .child(this.props.conversationKey + "/messages")
+                    .once("value", snapshot => {
+                        const currentMessages =  snapshot.val();            
+                        const messages = currentMessages === null || currentMessages === undefined ? [] : currentMessages;
+                        const updatedConversationRef = conversationRef.child(that.props.conversationKey);
 
-                //Update messages for conversation
-                updatedConversationRef.update({
-                    messages: messages              
-                });
+                        //add new message
+                        messages.push({
+                            content,
+                            sendDate,
+                            sentFromUserKey: that.props.fromUserKey,
+                            sentToUserKey: that.props.toUserKey,
+                        });
 
-                //Each time a message is sent need to update lastSentMessageDate
-                const conv = conversationRef.child(this.props.conversationKey);
-                conv.update({                    
-                    lastSentMessageDate: (new Date()).getTime()
-                });
+                        //Update messages for conversation
+                        updatedConversationRef.update({
+                            messages: messages              
+                        });
 
-                this.messageContent.value = "";
-            })
+                        //Each time a message is sent need to update lastSentMessageDate
+                        const conv = conversationRef.child(this.props.conversationKey);
+                        conv.update({                    
+                            lastSentMessageDate: (new Date()).getTime()
+                        });
 
-        // conversationRef
-        //     .orderByKey()
-        //     .equalTo(this.props.conversationKey)
-        //     .on("value", snapshot => {                
-        //         const conversation =  snapshot.val()[that.props.conversationKey];
-        //         if (conversation !== null && conversation !== undefined) {
-        //             const messages =  conversation.messages;                    
-        //             that.props.dispatch({
-        //                 type: sendMessageAction,
-        //                 data: {
-        //                     conversationKey: that.props.conversationKey,
-        //                     messages: messages
-        //                 }
-        //             })                   
-        //         }
-        //     })
+                        this.messageContent.value = "";
+                    })
+            }
+
+            this.messageContent.value = "";
+        });
         
         e.preventDefault();
     }
 
     getMessageList() {
+        debugger;
         const messageList = [];
         const that = this;
         const currentConversation = this.props.conversations.filter(c => c.conversationKey === this.props.conversationKey);

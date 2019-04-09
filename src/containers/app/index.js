@@ -10,9 +10,10 @@ import Register from '../../components/register';
 import Welcome from '../../components/Welcome';
 import Login from '../../components/login';
 import Message from '../../components/message';
+import {connect} from 'react-redux';
 
 //need to include home and about components
-const App = () => (
+const App = (props) => (
     <div className="container">
         <div className="row">
             <div className="col-sm-12">                
@@ -23,6 +24,7 @@ const App = () => (
                     <Link to='/Welcome'>Welcome</Link>
                     <Link to='/Login'>Login</Link>
                     <Link to='/message'>Message</Link>
+                    <span>Hello {props.username}</span>
                 </header>
             </div>
             <main className="col-sm-12">
@@ -37,4 +39,13 @@ const App = () => (
     </div>   
 )
 
-export default App;
+const mapStateToProps = ({account}) => {
+    return {        
+        username: account.currentUser.username
+    }
+};
+
+export default connect(
+    mapStateToProps,
+    null)
+(App);
