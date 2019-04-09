@@ -55,7 +55,6 @@ export default (state = initialState, action) => {
             return currentState;
         
         case AccountAction.SendMessage:
-            debugger;
             const conversations = [];
             let currentMessaging = state.currentMessaging;
 
@@ -86,7 +85,29 @@ export default (state = initialState, action) => {
                     conversations: conversations                    
                 });
 
-            return stateConversation;                
+            return stateConversation;    
+            
+        case "SELECTED_FRIEND":    
+            debugger;
+            let updatedConversation = [action.data.conversation];
+            if (action.data.conversation !== null) {
+                state.conversations.map((conv) => {
+                    if (conv.conversationKey !== action.data.conversation.conversationKey) {
+                        updatedConversation.push(conv);
+                    }
+                })
+            }
+
+            const newSeletedState =  Object.assign(
+                {},
+                state, 
+                {
+                    currentMessaging: action.data.currentMessaging,
+                    conversations: updatedConversation                    
+                });
+
+        
+            return newSeletedState;
 
         default:
             return state;

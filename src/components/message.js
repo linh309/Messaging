@@ -5,11 +5,16 @@ import {push} from 'connected-react-router';
 import {AccountAction, FirebasePath} from '../common/constants'
 
 const FriendList = (props) => {
-    if (props.list===null || props.list===undefined) return null;
+    if (props.list === null || props.list === undefined) return null;
     const activeClass = "list-group-item list-group-item-action flex-column align-items-start";
-    const list = props.list.map((item, index)=> 
-        
-        <button key={item.userkey} href="#" className={index==0?activeClass+" active":activeClass}>
+    const list = props.list.map((item, index) =>
+        <button
+            onClick = {props.onSelectFriend.bind(this, item.userkey)}
+            key={item.userkey} href="#"
+            className={item.userkey == props.toUserKey 
+                ? activeClass + " active" 
+                : activeClass}>
+
              <img className="user-avatar" src={item.avatar} alt="avatar" />
              <div className="about">
                 <div className="name">{item.username}</div>
@@ -17,6 +22,7 @@ const FriendList = (props) => {
                     <i className="fa fa-circle online"></i> online
                 </div>
             </div>
+
         </button>
     )
 
@@ -66,6 +72,7 @@ class Message extends React.Component {
         super(props);
         this.onSendMessage = this.onSendMessage.bind(this);
         this.getMessageList = this.getMessageList.bind(this);
+        this.onSelectFriend = this.onSelectFriend.bind(this);
         
     }
 
@@ -194,7 +201,6 @@ class Message extends React.Component {
     }
 
     getMessageList() {
-        debugger;
         const messageList = [];
         const that = this;
         const currentConversation = this.props.conversations.filter(c => c.conversationKey === this.props.conversationKey);
@@ -218,6 +224,59 @@ class Message extends React.Component {
         return messageList;
     }
 
+    onSelectFriend(userKey) {
+        if (userKey !== this.props.toUserKey) {
+            const newToUserKey = userKey;
+            const that = this;
+            const convRef = database.ref(FirebasePath.conversations);
+
+            convRef.once("value", snapshot => {            
+                const conversations = snapshot.val();
+                if (conversations != null ) {
+                    const convKeys = Object.keys(conversations);
+                    let conversationKey = "";
+
+                    convKeys.forEach((key) => {                        
+                        const chatUsers = [that.props.fromUserKey, newToUserKey];                       
+                        const conversationData = conversations[key];
+                        if (chatUsers.indexOf(conversationData.fromUserKey) >= 0 
+                            && chatUsers.indexOf(conversationData.toUserKey) >= 0)
+                        {
+                            conversationKey = key
+                        }                        
+                    })
+
+                    const existedConversationData = conversationKey !== "" ? conversations[conversationKey] : null;
+                    const existedConversation = conversationKey === "" 
+                                                    ? ""
+                                                    : {
+                                                        conversationKey: conversationKey,
+                                                        fromUserKey: existedConversationData.fromUserKey,
+                                                        toUserKey: existedConversationData.toUserKey,
+                                                        lastSentMessageDate: existedConversationData.lastSentMessageDate,      
+                                                        messages: existedConversationData !== null && existedConversationData !== undefined 
+                                                                        ? existedConversationData.messages 
+                                                                        : null
+                                                    };
+                    debugger                                
+                    that.props.dispatch({
+                        type: "SELECTED_FRIEND",
+                        data: 
+                            {
+                                currentMessaging: {
+                                    fromUserKey: that.props.fromUserKey,
+                                    toUserKey: newToUserKey,
+                                    conversationKey: conversationKey
+                                },
+                                conversation: existedConversation
+                            }
+                        }
+                    )
+                }
+            })
+        }
+    }
+
     render() {
         return (
             <div className="row message">
@@ -225,7 +284,7 @@ class Message extends React.Component {
                     <h1>Message</h1>
                 </div>
                 <div className='col-3'>
-                    <FriendList list={this.props.friendList} />
+                    <FriendList onSelectFriend={this.onSelectFriend} list={this.props.friendList} toUserKey={this.props.toUserKey} />
                 </div>
                 <div className='col-9'>
                     <div className="card text-white bg-info no-border-radius">
