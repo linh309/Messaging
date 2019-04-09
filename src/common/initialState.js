@@ -9,7 +9,8 @@ export const initialState = {
     },
     currentMessaging: {
         fromUserKey: "",
-        toUserKey: ""
+        toUserKey: "",
+        conversationKey: ""
     },
     conversations: []
 };

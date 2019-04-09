@@ -11,18 +11,17 @@ export default (state = initialState, action) => {
                 state, 
                 action.data);
 
-        case AccountAction.StartMessaging:        
-            debugger;    
-            var xxx= Object.assign(
-                {}, 
+        case AccountAction.StartMessaging:
+            const newState = Object.assign(
+                {},
                 state, 
                 {
-                    currentUser: { 
-                        friendList: action.data.friendList 
-                    }
+                    currentUser: Object.assign({}, {...state.currentUser}, {...action.data.currentUser}),
+                    currentMessaging: Object.assign({}, {...state.currentMessaging}, {...action.data.currentMessaging})
                 }
-            )
-            return xxx;
+            );
+
+            return newState;
 
         case AccountAction.Login:
             //User is current logged so just need to update against to database
@@ -30,27 +29,49 @@ export default (state = initialState, action) => {
             userRef.update({
                 isLogin: true,
                 lastLogin: new Date()
-            });    
-
-            const currentUser =   Object.assign(
-                {}, 
-                state.currentUser, 
-                action.data.currentUser);
+            });
 
             return Object.assign(
                 {}, 
                 state, 
-                {currentUser});
+                {
+                    currentUser: Object.assign({}, state.currentUser, action.data.currentUser)
+                }
+            );
         
-        case AccountAction.InitializeMessage:
-            debugger;
+        case AccountAction.InitializeMessage:        
             const currentState =  Object.assign(
                 {}, 
                 state, 
-                action.data);
-                //Currently, always get fetching data by UserFromKey with current user
+                {
+                    conversations: action.data.conversations,
+                    currentMessaging: Object.assign({}, state.currentMessaging, action.data.currentMessaging)
+                }
+            );
+
+            //Currently, always get fetching data by UserFromKey with current user
             return currentState;
         
+        case AccountAction.SendMessage:
+            debugger;
+            const conversations = [];
+            state.conversations.map((conv) => {
+                if (conv.conversationKey === action.data.conversationKey) {
+                    conv.messages = action.data.messages;
+                }
+
+                conversations.push(conv);
+            });
+
+            const state1 =  Object.assign(
+                {},
+                state, 
+                {
+                    conversations: conversations                    
+                });
+
+            return state1;                
+
         default:
             return state;
     }

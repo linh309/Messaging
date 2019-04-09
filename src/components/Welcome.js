@@ -12,11 +12,11 @@ class Welcome extends React.Component {
 
     onStartMessaging(e) {        
         const that = this;
+        let userKeyTo = "";
+        const friendList = [];
 
         //Get list of all current accounts
-        accountRef.once("value", snapshot => {
-            const friendList = [];
-            let userKeyTo = "";                    
+        accountRef.once("value", snapshot => {                    
             snapshot.forEach((item) => {                               
                 const user = item.val(); 
                 const userkey = item.key;                
@@ -47,24 +47,29 @@ class Welcome extends React.Component {
         })
 
         //Get list of messages
-         conversationRef
+        conversationRef
             .orderByChild("fromUserKey")
             .equalTo(that.props.userkey) //Currently, get all messages that were sent by current user
             .once("value", snapshot => {
                 const conversations = [];
+                let conversationKey = "";
+
+
                 snapshot.forEach((item) => {
                     const key = item.key;
                     const itemData = item.val();
 
-                    const listMessages = [];
-                    itemData.messages.forEach((itemMessage)=> {
-                        listMessages.push({
-                            content: itemMessage.content,
-                            sentDate: itemMessage.sentDate,
-                            sentFromUserKey: itemMessage.sentFromUserKey,
-                            sentToUserKey: itemMessage.sentToUserKey
-                        });
-                    })
+                    const listMessages = [];                    
+                    if (itemData.messages !== undefined) {                
+                        itemData.messages.forEach((itemMessage)=> {
+                            listMessages.push({
+                                content: itemMessage.content,
+                                sentDate: itemMessage.sentDate,
+                                sentFromUserKey: itemMessage.sentFromUserKey,
+                                sentToUserKey: itemMessage.sentToUserKey
+                            });
+                        })
+                    }
 
                     conversations.push({
                         conversationKey: key,
@@ -73,20 +78,27 @@ class Welcome extends React.Component {
                         lastSentMessageDate: itemData.lastSentMessageDate,
                         messages: listMessages
                     })
-                })
 
+                    //get current conversation key that maps to current fromUserKey and toUserKey               
+                    conversationKey = conversationKey === "" 
+                                        && that.props.userkey === itemData.fromUserKey
+                                        &&  itemData.toUserKey === userKeyTo
+                                    ? key
+                                    : conversationKey;
+
+                })
+                
                 that.props.dispatch({
                     type: AccountAction.InitializeMessage,
                     data: {
-                        conversations: conversations
+                        conversations: conversations,
+                        currentMessaging: { conversationKey }
                     }
                 })
-            })
 
-        
-
-        //Redirect to Message page
-        that.props.dispatch(push('/Message'));
+                //Redirect to Message page
+                that.props.dispatch(push('/Message'));
+        })
     }
 
     render() {
