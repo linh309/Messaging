@@ -16,9 +16,3 @@ ReactDOM.render(
     </Provider>,
     document.getElementById("root")
 )
-
-// ReactDOM.render(
-//     <div className="container-fluid">
-//         <Register />
-//     </div>,
-//     document.getElementById("root"));
