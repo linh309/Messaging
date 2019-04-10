@@ -1,9 +1,4 @@
-//container/home/index.js
 import React from 'react';
-import {push} from 'connected-react-router';
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
-import {increment} from '../../actioncreators/counterActionCreators'
 
 const Home = (props) => (
     <div className="row">

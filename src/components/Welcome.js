@@ -1,8 +1,8 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {accountRef, conversationRef} from "../config/firebase";
+import {accountRef, database} from "../config/firebase";
 import {push} from 'connected-react-router';
-import {AccountAction} from '../common/constants';
+import {AccountAction, FirebasePath} from '../common/constants';
 
 class Welcome extends React.Component {
     constructor(props) {
@@ -13,7 +13,8 @@ class Welcome extends React.Component {
     onStartMessaging(e) {        
         const that = this;
         let userKeyTo = "";
-        const friendList = [];
+        const friendList = [];        
+        const convRef = database.ref(FirebasePath.conversations);
 
         //Get list of all current accounts
         accountRef.once("value", snapshot => {                    
@@ -44,10 +45,70 @@ class Welcome extends React.Component {
                     }
                 }
             });
+
+            //will trigger to select first friend in the list
+            convRef.once("value", snapshot => {            
+                const conversations = snapshot.val();
+                if (conversations != null ) {
+                    const convKeys = Object.keys(conversations);
+                    let conversationKey = "";
+
+                    convKeys.forEach((key) => {                        
+                        const chatUsers = [that.props.userkey, userKeyTo];                       
+                        const conversationData = conversations[key];
+                        if (chatUsers.indexOf(conversationData.fromUserKey) >= 0 
+                            && chatUsers.indexOf(conversationData.toUserKey) >= 0)
+                        {
+                            conversationKey = key
+                        }                        
+                    })
+
+                    const existedConversationData = conversationKey !== "" ? conversations[conversationKey] : null;
+                    const existedConversation = conversationKey === "" 
+                                                    ? null
+                                                    : {
+                                                        conversationKey: conversationKey,
+                                                        fromUserKey: existedConversationData.fromUserKey,
+                                                        toUserKey: existedConversationData.toUserKey,
+                                                        lastSentMessageDate: existedConversationData.lastSentMessageDate,      
+                                                        messages: existedConversationData !== null && existedConversationData !== undefined 
+                                                                        ? existedConversationData.messages 
+                                                                        : null
+                                                    };
+                    that.props.dispatch({
+                        type: "SELECTED_FRIEND",
+                        data: 
+                            {
+                                currentMessaging: {
+                                    fromUserKey: that.props.userkey,
+                                    toUserKey: userKeyTo,
+                                    conversationKey: conversationKey
+                                },
+                                conversation: existedConversation
+                            }
+                        }
+                    )
+                } else { 
+                    //conversations == null
+                    that.props.dispatch({
+                        type: "SELECTED_FRIEND",
+                        data: 
+                            {
+                                currentMessaging: {
+                                    fromUserKey: that.props.userkey,
+                                    toUserKey: userKeyTo,
+                                    conversationKey: ""
+                                },
+                                conversation: null
+                            }
+                        }
+                    )
+                }
+            })
+
+            //Redirect to Message page
+            that.props.dispatch(push('/Message'));            
         })
-        
-        //Redirect to Message page
-        that.props.dispatch(push('/Message'));
     }
 
     render() {
