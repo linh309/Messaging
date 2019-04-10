@@ -56,27 +56,26 @@ export default (state = initialState, action) => {
         
         case AccountAction.SendMessage:
             const conversations = [];
-            let currentMessaging = state.currentMessaging;
 
-            if (state.conversations !== undefined && state.conversations.length <= 0) {
+            if (action.data.conversation !== null) {
                 conversations.push(action.data.conversation);
-                currentMessaging = Object.assign(
-                    {},
-                    {...currentMessaging}, 
-                    {
-                        conversationKey: action.data.conversation.conversationKey                    
-                    });
             }
-            else {
-                state.conversations.map((conv) => {
-                    if (conv.conversationKey === action.data.conversation.conversationKey) {
-                        conv.messages = action.data.conversation.messages;
-                    }
 
-                    conversations.push(conv);
+            if (state.conversations !== undefined && state.conversations !== null && state.conversations.length >= 0) {
+                state.conversations.map((conv) => {
+                    if (conv.conversationKey !== action.data.conversation.conversationKey) {
+                        conversations.push(conv)
+                    }                     
                 });
             }
 
+            const currentMessaging = Object.assign(
+                                        {},
+                                        {...state.currentMessaging}, 
+                                        {
+                                            conversationKey: action.data.conversation.conversationKey                    
+                                        });
+                                        
             let stateConversation =  Object.assign(
                 {},
                 state, 
@@ -89,10 +88,16 @@ export default (state = initialState, action) => {
             
         case "SELECTED_FRIEND":    
             debugger;
-            let updatedConversation = [action.data.conversation];
-            if (action.data.conversation !== null) {
+            let updatedConversation = [];
+            if (action.data.conversation != null) {
+                updatedConversation.push(action.data.conversation)
+            }
+
+            if (state.conversations !== null) {
                 state.conversations.map((conv) => {
-                    if (conv.conversationKey !== action.data.conversation.conversationKey) {
+                    if (action.data.conversation === null 
+                        || action.data.conversation.conversationKey === "" 
+                        || conv.conversationKey !== action.data.conversation.conversationKey) {
                         updatedConversation.push(conv);
                     }
                 })

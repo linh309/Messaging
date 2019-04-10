@@ -143,9 +143,10 @@ class Message extends React.Component {
                 convKeys.forEach((key) => {
                     const conversationData = conversations[key];
                     const chatUsers = [that.props.fromUserKey, that.props.toUserKey];
-                    isExistedConversation =         chatUsers.indexOf(conversationData.fromUserKey) >= 0 
-                                                &&  chatUsers.indexOf(conversationData.toUserKey) >= 0 
-                                                &&  !isExistedConversation                    
+                    if (!isExistedConversation) {
+                        isExistedConversation = chatUsers.indexOf(conversationData.fromUserKey) >= 0  
+                                                    &&  chatUsers.indexOf(conversationData.toUserKey) >= 0 
+                    }                  
                 })
 
                 if (isExistedConversation) {
@@ -248,7 +249,7 @@ class Message extends React.Component {
 
                     const existedConversationData = conversationKey !== "" ? conversations[conversationKey] : null;
                     const existedConversation = conversationKey === "" 
-                                                    ? ""
+                                                    ? null
                                                     : {
                                                         conversationKey: conversationKey,
                                                         fromUserKey: existedConversationData.fromUserKey,
@@ -258,7 +259,6 @@ class Message extends React.Component {
                                                                         ? existedConversationData.messages 
                                                                         : null
                                                     };
-                    debugger                                
                     that.props.dispatch({
                         type: "SELECTED_FRIEND",
                         data: 
@@ -269,6 +269,21 @@ class Message extends React.Component {
                                     conversationKey: conversationKey
                                 },
                                 conversation: existedConversation
+                            }
+                        }
+                    )
+                } else { 
+                    //conversations == null
+                    that.props.dispatch({
+                        type: "SELECTED_FRIEND",
+                        data: 
+                            {
+                                currentMessaging: {
+                                    fromUserKey: that.props.fromUserKey,
+                                    toUserKey: newToUserKey,
+                                    conversationKey: ""
+                                },
+                                conversation: null
                             }
                         }
                     )
